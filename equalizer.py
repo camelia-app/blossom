@@ -1,12 +1,10 @@
-# %%
-# Imports
 import sys
 
 # Accessing to my other git repos
 sys.path.insert(0, "..")
 sys.path.insert(0, "../..")
 
-from sunflower.sunflower.song_loader import Song, load_from_disk
+from sunflower.sunflower.song_loader import Song
 from sunflower.sunflower.song_analyzer import SongAnalyzer
 from sunflower.sunflower.utils import export_wav
 from sunflower.sunflower.benchmark import run_benchmark
@@ -19,22 +17,6 @@ from moviepy.audio.AudioClip import AudioArrayClip
 import numpy as np
 import librosa
 import soundfile as sf
-
-# %%
-# Loading example file
-
-raw_audio, extension = load_from_disk("assets/shazo_eq.wav")
-
-song = Song(raw_audio, extension)
-
-song.print_attributes()
-
-# %%
-# Analyze song
-
-song_analyzer = SongAnalyzer(song)
-
-# %%
 
 
 class AudioBar:
@@ -90,62 +72,51 @@ def color_clip(size, duration, fps=25, color=(50, 50, 50)):
     return ColorClip(size, color, duration=duration)
 
 
-frequencies = np.arange(50, 10000, 100)
-size = (400, 400)
-audioclip = AudioArrayClip(
-    song.waveform.reshape(-1, 2),
-    song.sr,
-)
+def generate_equalizer(song, song_analyzer, size=(400, 400), fps_equalizer=1 / 24):
+    """Generate an equalizer."""
 
-duration = audioclip.duration
+    frequencies = np.arange(50, 10000, 100)
 
-fps_equalizer = 1 / 24
-fps_equalizer = 1 / 24
-time = 0
-width = size[1] / len(frequencies)
-y = size[0]
-clips = []
+    audioclip = AudioArrayClip(
+        song.waveform.reshape(-1, 2),
+        song.sr,
+    )
 
-comptdebug = 0
+    duration = audioclip.duration
 
+    time = 0
+    width = size[1] / len(frequencies)
+    y = size[0]
+    clips = []
 
-while len(clips) * fps_equalizer < duration:
-    x = 0
-    clip = color_clip(size, fps_equalizer)
+    while len(clips) * fps_equalizer < duration:
+        x = 0
+        clip = color_clip(size, fps_equalizer)
 
-    for c in frequencies:
+        for c in frequencies:
 
-        clip = clip.fl_image(
-            lambda image: draw_rectangle(
-                image,
-                AudioBar(
-                    x,
-                    y,
-                    c,
-                    song_analyzer.get_decibel(time, c),
-                    max_height=400,
-                    width=width,
-                ),
+            clip = clip.fl_image(
+                lambda image: draw_rectangle(
+                    image,
+                    AudioBar(
+                        x,
+                        y,
+                        c,
+                        song_analyzer.get_decibel(time, c),
+                        max_height=400,
+                        width=width,
+                    ),
+                )
             )
-        )
 
-        x += width
+            x += width
 
-    clip = clip.set_duration(fps_equalizer).set_start(time)
-    clips.append(clip)
+        clip = clip.set_duration(fps_equalizer).set_start(time)
+        clips.append(clip)
 
-    time += fps_equalizer
+        time += fps_equalizer
 
+    clip = CompositeVideoClip(clips)
+    clip = clip.set_audio(audioclip)
 
-clip = CompositeVideoClip(clips)
-clip = clip.set_audio(audioclip)
-
-# %%
-clip.write_videofile(
-    "generated/equalizer.mp4",
-    fps=24,
-    temp_audiofile="generated/temp-audio.m4a",
-    remove_temp=True,
-    codec="libx264",
-    audio_codec="aac",
-)
+    return clip
