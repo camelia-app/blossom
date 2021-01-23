@@ -32,3 +32,7 @@ clip.write_videofile(
 )
 
 # %%
+
+clip.write_gif("generated/equalizer.gif", fps=24)
+
+# %%
