@@ -37,22 +37,25 @@ list_bass = lists[1]
 list_heavy = lists[2]
 clips_detect = []
 
+# %%
 for t in range(0, len(timestamps)):
 
     if list_bass[t] == 1:
 
         txt_clip = TextClip("bass_detected", fontsize=20, color="black")
-        txt_clip = txt_clip.set_position((50, 0)).set_duration(length_step).set_start(timestamps[t])
+        txt_clip = txt_clip.set_position((150, 150)).set_duration(length_step).set_start(timestamps[t])
         clips_detect.append(txt_clip)
 
     if list_heavy[t] == 1:
 
         clips_detect.append(
-            TextClip("heavy_detected", fontsize=20, color="black")
+            TextClip(" ", fontsize=20, color="black")
             .set_duration(length_step)
             .set_start(timestamps[t])
             .set_position((50, 200))
         )
+# %%
+list_bass
 # %%
 
 clip = generate_equalizer(song, song_analyzer)
