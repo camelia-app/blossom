@@ -83,7 +83,6 @@ def generate_equalizer(song, song_analyzer, size=(400, 400), fps_equalizer=1 / 2
     )
 
     duration = audioclip.duration
-
     time = 0
     width = size[1] / len(frequencies)
     y = size[0]
